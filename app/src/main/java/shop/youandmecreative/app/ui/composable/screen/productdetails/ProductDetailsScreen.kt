@@ -14,6 +14,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,7 +37,6 @@ import shop.youandmecreative.app.ui.composable.shared.YNMCREmptyView
 import shop.youandmecreative.app.ui.state.DataUiState
 import shop.youandmecreative.app.ui.theme.Accent
 import shop.youandmecreative.app.ui.theme.MutedText
-import shop.youandmecreative.app.ui.theme.OnSurface
 import shop.youandmecreative.app.ui.theme.Primary
 import shop.youandmecreative.app.ui.viewmodel.ProductDetailsViewModel
 import org.koin.compose.viewmodel.koinViewModel
@@ -70,10 +71,7 @@ private fun ProductDetailsScreenContent(
             dataState = productState,
             dataPopulated = {
                 val product = (productState as DataUiState.Populated<Product>).data
-                ProductDetailsPopulated(
-                    product = product,
-                    onAddToCart = onAddToCart,
-                )
+                ProductDetailBody(product = product, onAddToCart = onAddToCart)
             },
             dataEmpty = {
                 YNMCREmptyView(
@@ -86,7 +84,7 @@ private fun ProductDetailsScreenContent(
 }
 
 @Composable
-private fun ProductDetailsPopulated(
+private fun ProductDetailBody(
     product: Product,
     onAddToCart: () -> Unit,
 ) {
@@ -95,45 +93,42 @@ private fun ProductDetailsPopulated(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
-        // Hero image
         Image(
             painter = painterResource(id = product.imageRes),
             contentDescription = product.title,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(300.dp)
-                .clip(RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)),
-            contentScale = ContentScale.Crop
+                .clip(RoundedCornerShape(bottomStart = 10.dp, bottomEnd = 10.dp)),
+            contentScale = ContentScale.Crop,
         )
 
-        Column(
-            modifier = Modifier.padding(horizontal = 20.dp)
-        ) {
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Category chip
-            Text(
-                text = stringResource(product.category.titleRes).uppercase(),
-                fontSize = 11.sp,
-                color = Accent,
-                fontWeight = FontWeight.Medium,
-                letterSpacing = 1.5.sp,
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Product name
+        Column(modifier = Modifier.padding(20.dp)) {
             Text(
                 text = product.title,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = OnSurface,
-                letterSpacing = 0.5.sp,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            SuggestionChip(
+                onClick = {},
+                label = {
+                    Text(
+                        text = stringResource(product.category.titleRes),
+                        fontSize = 12.sp,
+                    )
+                },
+                shape = RoundedCornerShape(10.dp),
+                colors = SuggestionChipDefaults.suggestionChipColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                ),
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Price
             Text(
                 text = "£%.2f".format(product.price),
                 fontSize = 20.sp,
@@ -141,9 +136,8 @@ private fun ProductDetailsPopulated(
                 color = Accent,
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Description
             Text(
                 text = product.description,
                 fontSize = 14.sp,
@@ -153,7 +147,6 @@ private fun ProductDetailsPopulated(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Add to Cart button
             Button(
                 onClick = onAddToCart,
                 modifier = Modifier
@@ -166,11 +159,9 @@ private fun ProductDetailsPopulated(
                     text = stringResource(R.string.button_add_to_cart_label),
                     color = Color.White,
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Medium,
                 )
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
