@@ -14,14 +14,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -32,6 +30,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -39,11 +38,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.launch
 import shop.youandmecreative.app.R
 import shop.youandmecreative.app.ui.theme.Divider
+import shop.youandmecreative.app.ui.theme.MutedText
+import shop.youandmecreative.app.ui.theme.OnSurface
 import shop.youandmecreative.app.ui.theme.Primary
 import shop.youandmecreative.app.ui.viewmodel.YNMCROnboardingVM
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 data class OnboardingContent(
@@ -77,8 +78,8 @@ fun OnboardingScreen(
     onNavigateToHomeScreen: () -> Unit,
 ) {
     val onboardingSetState by viewModel.onboardingSetState.collectAsState()
-    val pagerState = rememberPagerState(pageCount = { onboardingPagesContent.size })
     val scope = rememberCoroutineScope()
+    val pagerState = rememberPagerState(pageCount = { onboardingPagesContent.size })
 
     LaunchedEffect(onboardingSetState) {
         if (onboardingSetState) {
@@ -89,20 +90,20 @@ fun OnboardingScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+            .background(Color.White),
     ) {
         // Skip button
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            horizontalArrangement = Arrangement.End,
+                .padding(horizontal = 20.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.End
         ) {
-            TextButton(onClick = { viewModel.setOnboarded() }) {
+            TextButton(onClick = { viewModel.setOnboardingCompleted() }) {
                 Text(
                     text = stringResource(R.string.skip_button_title),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.labelMedium,
+                    color = MutedText,
+                    fontSize = 14.sp,
                 )
             }
         }
@@ -118,30 +119,36 @@ fun OnboardingScreen(
                     .fillMaxSize()
                     .padding(horizontal = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
             ) {
                 Image(
-                    painter = painterResource(content.imageRes),
+                    painter = painterResource(id = content.imageRes),
                     contentDescription = null,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(300.dp)
+                        .height(340.dp)
                         .clip(RoundedCornerShape(10.dp)),
-                    contentScale = ContentScale.Crop,
+                    contentScale = ContentScale.Crop
                 )
+
                 Spacer(modifier = Modifier.height(32.dp))
+
                 Text(
-                    text = stringResource(content.titleRes),
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    text = stringResource(id = content.titleRes),
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = OnSurface,
                     textAlign = TextAlign.Center,
+                    letterSpacing = 1.sp,
                 )
+
                 Spacer(modifier = Modifier.height(16.dp))
+
                 Text(
-                    text = stringResource(content.descriptionRes),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    text = stringResource(id = content.descriptionRes),
+                    fontSize = 15.sp,
+                    color = MutedText,
                     textAlign = TextAlign.Center,
+                    lineHeight = 24.sp,
                 )
             }
         }
@@ -150,65 +157,53 @@ fun OnboardingScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp),
+                .padding(bottom = 16.dp),
             horizontalArrangement = Arrangement.Center,
         ) {
             repeat(onboardingPagesContent.size) { index ->
+                val color = if (pagerState.currentPage == index) Primary else Divider
                 Box(
                     modifier = Modifier
                         .padding(horizontal = 4.dp)
-                        .size(if (index == pagerState.currentPage) 10.dp else 8.dp)
+                        .size(if (pagerState.currentPage == index) 10.dp else 8.dp)
                         .clip(CircleShape)
-                        .background(
-                            if (index == pagerState.currentPage) Primary else Divider
-                        ),
+                        .background(color)
                 )
             }
         }
 
-        // Buttons
-        Row(
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Button
+        Button(
+            onClick = {
+                if (pagerState.currentPage < onboardingPagesContent.size - 1) {
+                    scope.launch {
+                        pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                    }
+                } else {
+                    viewModel.setOnboardingCompleted()
+                }
+            },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-                .padding(bottom = 32.dp),
-            horizontalArrangement = Arrangement.Center,
+                .height(48.dp)
+                .padding(horizontal = 24.dp),
+            shape = RoundedCornerShape(10.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Primary),
         ) {
-            if (pagerState.currentPage == onboardingPagesContent.size - 1) {
-                Button(
-                    onClick = { viewModel.setOnboarded() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Primary),
-                ) {
-                    Text(
-                        text = stringResource(R.string.start_button_title),
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                }
-            } else {
-                Button(
-                    onClick = {
-                        scope.launch {
-                            pagerState.animateScrollToPage(pagerState.currentPage + 1)
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Primary),
-                ) {
-                    Text(
-                        text = stringResource(R.string.next_button_title),
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                }
-            }
+            Text(
+                text = if (pagerState.currentPage < onboardingPagesContent.size - 1) {
+                    stringResource(R.string.next_button_title)
+                } else {
+                    stringResource(R.string.start_button_title)
+                },
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+            )
         }
+
+        Spacer(modifier = Modifier.height(32.dp))
     }
 }
