@@ -6,9 +6,9 @@
 
     <!-- top bar titles -->
     <string name="top_bar_home_title">You&amp;Me Creative</string>
-    <string name="top_bar_cart_title">Shopping Cart</string>
+    <string name="top_bar_cart_title">Your Cart</string>
     <string name="top_bar_checkout_title">Reserve Your Order</string>
-    <string name="top_bar_orders_title">My Orders</string>
+    <string name="top_bar_orders_title">Order History</string>
     <string name="top_bar_settings_title">Settings</string>
     <string name="top_bar_product_details_title">Product Details</string>
 
@@ -43,6 +43,15 @@
     <string name="home_categories">Shop by Category</string>
     <string name="home_all_products">Our Collection</string>
     <string name="home_inspiration">Interior Inspiration</string>
+    <string name="shop_by_category">Shop by Category</string>
+    <string name="interior_inspiration">Interior Inspiration</string>
+    <string name="all_products">Our Collection</string>
+    <string name="inspiration_1_title">5 Ways to Style Your Living Room</string>
+    <string name="inspiration_1_desc">Expert tips on arranging furniture, choosing colours, and layering textures for a cohesive look.</string>
+    <string name="inspiration_2_title">The Art of Layering Textures</string>
+    <string name="inspiration_2_desc">Mix linen, velvet, and woven materials to create depth and warmth in any room.</string>
+    <string name="inspiration_3_title">Creating Cozy Corners</string>
+    <string name="inspiration_3_desc">Transform unused nooks into inviting reading spots with the right decor and lighting.</string>
 
     <!-- product details screen -->
     <string name="product_details_state_empty_primary_text">No information available for this product</string>
@@ -59,6 +68,8 @@
     <string name="delete_item_icon_description">Delete item</string>
     <string name="cart_subtotal">Subtotal</string>
     <string name="cart_total">Total</string>
+    <string name="subtotal_label">Subtotal</string>
+    <string name="total_label">Total</string>
 
     <!-- orders screen -->
     <string name="orders_state_empty_primary_text">No orders yet</string>
@@ -91,6 +102,7 @@
     <string name="settings_screen_privacy_policy_label">Privacy Policy</string>
     <string name="settings_screen_about_label">About</string>
     <string name="settings_screen_about_text">You &amp; Me Creations is a creative home goods brand dedicated to bringing unique, handcrafted decor pieces to your space. Every item is thoughtfully selected to help you create a home that reflects your personal style.</string>
+    <string name="settings_screen_about_description">You &amp; Me Creations is a creative home goods brand dedicated to bringing unique, handcrafted decor pieces to your space. Every item is thoughtfully selected to help you create a home that reflects your personal style.</string>
     <string name="company_name">YOU &amp; ME CREATIONS LTD</string>
     <string name="app_version">1.0.0</string>
     <string name="customer_support_link">https://youandmecreationsart.uk</string>

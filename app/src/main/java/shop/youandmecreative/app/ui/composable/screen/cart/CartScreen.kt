@@ -1,6 +1,7 @@
 package shop.youandmecreative.app.ui.composable.screen.cart
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,7 +38,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -92,130 +92,141 @@ private fun CartScreenContent(
     onDeleteItemClick: (Int) -> Unit,
     onCompleteOrderButtonClick: () -> Unit,
 ) {
-    YNMCRContentWrapper(
-        dataState = cartItemsState,
-        modifier = modifier,
-
-        dataPopulated = {
-            val items = (cartItemsState as DataUiState.Populated<List<CartItemUiState>>).data
-            Column(modifier = Modifier.fillMaxSize()) {
-                LazyColumn(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 16.dp),
+    Column(modifier = modifier.fillMaxSize()) {
+        YNMCRContentWrapper(
+            modifier = Modifier.weight(1f),
+            dataState = cartItemsState,
+            dataPopulated = {
+                val items = (cartItemsState as DataUiState.Populated<List<CartItemUiState>>).data
+                CartPopulatedContent(
+                    items = items,
+                    totalPrice = totalPrice,
+                    onPlusItemClick = onPlusItemClick,
+                    onMinusItemClick = onMinusItemClick,
+                    onDeleteItemClick = onDeleteItemClick,
+                    onReserveOrderClick = onCompleteOrderButtonClick,
+                )
+            },
+            dataEmpty = {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    items(items, key = { it.productId }) { item ->
-                        CartItemRow(
-                            item = item,
-                            onPlusClick = { onPlusItemClick(item.productId) },
-                            onMinusClick = { onMinusItemClick(item.productId) },
-                            onDeleteClick = { onDeleteItemClick(item.productId) },
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Outlined.ShoppingBag,
+                        contentDescription = null,
+                        modifier = Modifier.size(64.dp),
+                        tint = Divider,
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = stringResource(R.string.cart_state_empty_primary_text),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = OnSurface,
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(R.string.cart_state_empty_secondary_text),
+                        fontSize = 14.sp,
+                        color = MutedText,
+                    )
                 }
+            },
+        )
+    }
+}
 
-                // Order summary
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+@Composable
+private fun CartPopulatedContent(
+    items: List<CartItemUiState>,
+    totalPrice: Double,
+    onPlusItemClick: (Int) -> Unit,
+    onMinusItemClick: (Int) -> Unit,
+    onDeleteItemClick: (Int) -> Unit,
+    onReserveOrderClick: () -> Unit,
+) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 16.dp),
+        ) {
+            items(items, key = { it.productId }) { item ->
+                CartItemRow(
+                    item = item,
+                    onPlusClick = { onPlusItemClick(item.productId) },
+                    onMinusClick = { onMinusItemClick(item.productId) },
+                    onDeleteClick = { onDeleteItemClick(item.productId) },
+                )
+            }
+        }
+
+        // Order summary
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+        ) {
+            Column(modifier = Modifier.padding(20.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                        ) {
-                            Text(
-                                text = stringResource(R.string.subtotal_label),
-                                fontSize = 14.sp,
-                                color = MutedText,
-                            )
-                            Text(
-                                text = "£%.2f".format(totalPrice),
-                                fontSize = 14.sp,
-                                color = OnSurface,
-                            )
-                        }
-
-                        HorizontalDivider(
-                            modifier = Modifier.padding(vertical = 12.dp),
-                            color = Divider,
-                        )
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                        ) {
-                            Text(
-                                text = stringResource(R.string.total_label),
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = OnSurface,
-                            )
-                            Text(
-                                text = "£%.2f".format(totalPrice),
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = Accent,
-                            )
-                        }
-                    }
+                    Text(
+                        text = stringResource(R.string.cart_subtotal),
+                        fontSize = 14.sp,
+                        color = MutedText,
+                    )
+                    Text(
+                        text = "£%.2f".format(totalPrice),
+                        fontSize = 14.sp,
+                        color = OnSurface,
+                    )
                 }
-
-                // Reserve Order button
+                Spacer(modifier = Modifier.height(8.dp))
+                HorizontalDivider(color = Divider)
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        text = stringResource(R.string.cart_total),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = OnSurface,
+                    )
+                    Text(
+                        text = "£%.2f".format(totalPrice),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Accent,
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    onClick = onCompleteOrderButtonClick,
+                    onClick = onReserveOrderClick,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .padding(bottom = 16.dp)
                         .height(48.dp),
                     shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Primary),
                 ) {
                     Text(
                         text = stringResource(R.string.button_place_order_label, totalPrice),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
                         color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
                     )
                 }
             }
-        },
-
-        dataEmpty = {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.ShoppingBag,
-                    contentDescription = null,
-                    modifier = Modifier.size(64.dp),
-                    tint = Divider,
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = stringResource(R.string.cart_state_empty_primary_text),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = OnSurface,
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = stringResource(R.string.cart_state_empty_secondary_text),
-                    fontSize = 14.sp,
-                    color = MutedText,
-                )
-            }
-        },
-    )
+        }
+    }
 }
 
 @Composable
@@ -227,7 +238,7 @@ private fun CartItemRow(
 ) {
     Card(
         shape = RoundedCornerShape(10.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
     ) {
         Row(
@@ -236,7 +247,6 @@ private fun CartItemRow(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            // Thumbnail
             item.productImageRes?.let { imageRes ->
                 Image(
                     painter = painterResource(id = imageRes),
@@ -249,28 +259,32 @@ private fun CartItemRow(
                 Spacer(modifier = Modifier.width(12.dp))
             }
 
-            // Name and price
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = item.productTitle,
                     fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
+                    fontWeight = FontWeight.SemiBold,
                     color = OnSurface,
                     maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "£%.2f".format(item.productPrice),
                     fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Medium,
                     color = Accent,
                 )
             }
 
             // Quantity stepper
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onMinusClick, modifier = Modifier.size(32.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                IconButton(
+                    onClick = onMinusClick,
+                    modifier = Modifier.size(32.dp),
+                ) {
                     Icon(
                         imageVector = Icons.Outlined.Remove,
                         contentDescription = stringResource(R.string.decrease_quantity_icon_description),
@@ -283,20 +297,24 @@ private fun CartItemRow(
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     color = OnSurface,
-                    modifier = Modifier.padding(horizontal = 4.dp),
                 )
-                IconButton(onClick = onPlusClick, modifier = Modifier.size(32.dp)) {
+                IconButton(
+                    onClick = onPlusClick,
+                    modifier = Modifier.size(32.dp),
+                ) {
                     Icon(
                         imageVector = Icons.Outlined.Add,
                         contentDescription = stringResource(R.string.increase_quantity_icon_description),
-                        tint = MutedText,
+                        tint = Primary,
                         modifier = Modifier.size(18.dp),
                     )
                 }
             }
 
-            // Delete
-            IconButton(onClick = onDeleteClick, modifier = Modifier.size(32.dp)) {
+            IconButton(
+                onClick = onDeleteClick,
+                modifier = Modifier.size(32.dp),
+            ) {
                 Icon(
                     imageVector = Icons.Outlined.Delete,
                     contentDescription = stringResource(R.string.delete_item_icon_description),

@@ -188,7 +188,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = stringResource(R.string.settings_screen_about_description),
+                    text = stringResource(R.string.settings_screen_about_text),
                     fontSize = 14.sp,
                     color = MutedText,
                     lineHeight = 22.sp,

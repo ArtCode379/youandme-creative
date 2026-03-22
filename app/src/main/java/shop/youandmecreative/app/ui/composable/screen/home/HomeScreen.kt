@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -41,7 +42,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -67,14 +67,6 @@ import shop.youandmecreative.app.ui.theme.Primary
 import shop.youandmecreative.app.ui.viewmodel.ProductViewModel
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
-
-private val carouselImages = listOf(
-    R.drawable.carousel1,
-    R.drawable.carousel2,
-    R.drawable.carousel3,
-)
-
-private val carouselProductIndices = listOf(0, 4, 9)
 
 private data class InspirationArticle(
     val title: String,
@@ -110,74 +102,86 @@ private fun HomeContent(
     onNavigateToProductDetails: (productId: Int) -> Unit,
     onAddProductToCart: (productId: Int) -> Unit,
 ) {
-    YNMCRContentWrapper(
-        dataState = productsState,
-        modifier = modifier,
+    Column(modifier = modifier) {
+        YNMCRContentWrapper(
+            dataState = productsState,
+            dataPopulated = {
+                val products = (productsState as DataUiState.Populated<List<Product>>).data
+                HomePopulatedContent(
+                    products = products,
+                    onNavigateToProductDetails = onNavigateToProductDetails,
+                )
+            },
+            dataEmpty = {
+                YNMCREmptyView(
+                    primaryText = stringResource(R.string.products_state_empty_primary_text),
+                    modifier = Modifier.fillMaxSize(),
+                )
+            },
+        )
+    }
+}
 
-        dataPopulated = {
-            val products = (productsState as DataUiState.Populated<List<Product>>).data
-            var selectedCategory by remember { mutableStateOf<ProductCategory?>(null) }
-            val filteredProducts = if (selectedCategory == null) products
-                else products.filter { it.category == selectedCategory }
+@Composable
+private fun HomePopulatedContent(
+    products: List<Product>,
+    onNavigateToProductDetails: (productId: Int) -> Unit,
+) {
+    var selectedCategory by remember { mutableStateOf<ProductCategory?>(null) }
+    val filteredProducts = if (selectedCategory == null) products
+        else products.filter { it.category == selectedCategory }
+    val featuredProducts = products.take(4)
 
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                // Hero Carousel
-                item(span = { GridItemSpan(2) }) {
-                    HeroCarousel(products = products, onProductClick = onNavigateToProductDetails)
-                }
-
-                // Section: Shop by Category
-                item(span = { GridItemSpan(2) }) {
-                    SectionHeader(title = stringResource(R.string.shop_by_category))
-                }
-                item(span = { GridItemSpan(2) }) {
-                    CategoryChipsRow(
-                        selectedCategory = selectedCategory,
-                        onCategorySelected = { selectedCategory = it }
-                    )
-                }
-
-                // Inspiration section
-                item(span = { GridItemSpan(2) }) {
-                    SectionHeader(title = stringResource(R.string.interior_inspiration))
-                }
-                item(span = { GridItemSpan(2) }) {
-                    InspirationRow()
-                }
-
-                // Section: All Products
-                item(span = { GridItemSpan(2) }) {
-                    SectionHeader(title = stringResource(R.string.all_products))
-                }
-
-                // Product Grid
-                items(filteredProducts) { product ->
-                    ProductCard(
-                        product = product,
-                        onClick = { onNavigateToProductDetails(product.id) }
-                    )
-                }
-
-                // Bottom spacing
-                item(span = { GridItemSpan(2) }) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-            }
-        },
-
-        dataEmpty = {
-            YNMCREmptyView(
-                primaryText = stringResource(R.string.products_state_empty_primary_text),
-                modifier = Modifier.fillMaxSize(),
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        // Hero Carousel
+        item(span = { GridItemSpan(2) }) {
+            HeroCarousel(
+                products = featuredProducts,
+                onProductClick = onNavigateToProductDetails,
             )
-        },
-    )
+        }
+
+        // Category chips
+        item(span = { GridItemSpan(2) }) {
+            CategoryChips(
+                selectedCategory = selectedCategory,
+                onCategorySelected = { selectedCategory = it },
+            )
+        }
+
+        // Inspiration section
+        item(span = { GridItemSpan(2) }) {
+            InspirationSection()
+        }
+
+        // Section header
+        item(span = { GridItemSpan(2) }) {
+            Text(
+                text = stringResource(R.string.home_all_products),
+                style = MaterialTheme.typography.titleLarge,
+                color = OnSurface,
+                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
+            )
+        }
+
+        // Product grid
+        items(filteredProducts) { product ->
+            ProductCard(
+                product = product,
+                onClick = { onNavigateToProductDetails(product.id) },
+            )
+        }
+
+        // Bottom spacing
+        item(span = { GridItemSpan(2) }) {
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
 }
 
 @Composable
@@ -185,39 +189,38 @@ private fun HeroCarousel(
     products: List<Product>,
     onProductClick: (Int) -> Unit,
 ) {
-    val featuredProducts = carouselProductIndices.mapNotNull { products.getOrNull(it) }
-    val pagerState = rememberPagerState(pageCount = { featuredProducts.size })
+    val pagerState = rememberPagerState(pageCount = { products.size })
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(pagerState) {
         while (true) {
             delay(4000)
-            val nextPage = (pagerState.currentPage + 1) % featuredProducts.size
-            pagerState.animateScrollToPage(nextPage)
+            val next = (pagerState.currentPage + 1) % products.size
+            pagerState.animateScrollToPage(next)
         }
     }
 
     Column {
+        Spacer(modifier = Modifier.height(8.dp))
+
         HorizontalPager(
             state = pagerState,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(220.dp),
+                .height(200.dp)
+                .clip(RoundedCornerShape(10.dp)),
         ) { page ->
-            val product = featuredProducts[page]
+            val product = products[page]
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 4.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .clickable { onProductClick(product.id) },
+                    .clickable { onProductClick(product.id) }
             ) {
                 Image(
-                    painter = painterResource(id = carouselImages[page]),
+                    painter = painterResource(id = product.imageRes),
                     contentDescription = product.title,
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
+                    contentScale = ContentScale.Crop
                 )
-                // Gradient overlay
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -228,11 +231,10 @@ private fun HeroCarousel(
                             )
                         )
                 )
-                // Text overlay
                 Column(
                     modifier = Modifier
                         .align(Alignment.BottomStart)
-                        .padding(16.dp),
+                        .padding(16.dp)
                 ) {
                     Text(
                         text = product.title,
@@ -242,7 +244,7 @@ private fun HeroCarousel(
                     )
                     Text(
                         text = "£%.2f".format(product.price),
-                        color = Accent,
+                        color = Color(0xFFE5C864),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                     )
@@ -254,120 +256,129 @@ private fun HeroCarousel(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 12.dp),
+                .padding(top = 10.dp),
             horizontalArrangement = Arrangement.Center,
         ) {
-            repeat(featuredProducts.size) { index ->
+            repeat(products.size) { index ->
+                val color = if (pagerState.currentPage == index) Primary else Divider
                 Box(
                     modifier = Modifier
                         .padding(horizontal = 3.dp)
-                        .size(if (index == pagerState.currentPage) 8.dp else 6.dp)
+                        .size(if (pagerState.currentPage == index) 8.dp else 6.dp)
                         .clip(CircleShape)
-                        .background(
-                            if (index == pagerState.currentPage) Primary else Divider
-                        )
+                        .background(color)
                 )
             }
         }
-
-        Spacer(modifier = Modifier.height(8.dp))
     }
 }
 
 @Composable
-private fun SectionHeader(title: String) {
-    Text(
-        text = title.uppercase(),
-        fontSize = 11.sp,
-        fontWeight = FontWeight.Medium,
-        color = Accent,
-        letterSpacing = 1.5.sp,
-        modifier = Modifier.padding(top = 20.dp, bottom = 8.dp),
-    )
-}
-
-@Composable
-private fun CategoryChipsRow(
+private fun CategoryChips(
     selectedCategory: ProductCategory?,
     onCategorySelected: (ProductCategory?) -> Unit,
 ) {
-    val categories = listOf<Pair<String, ProductCategory?>>(
-        stringResource(R.string.category_all) to null,
-    ) + ProductCategory.entries.map { stringResource(it.titleRes) to it }
-
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        items(categories) { (label, category) ->
-            FilterChip(
-                selected = selectedCategory == category,
-                onClick = { onCategorySelected(category) },
-                label = {
-                    Text(
-                        text = label,
-                        fontSize = 13.sp,
-                    )
-                },
-                shape = RoundedCornerShape(10.dp),
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = Primary,
-                    selectedLabelColor = Color.White,
-                    containerColor = Color.White,
-                    labelColor = OnSurface,
-                ),
-                border = FilterChipDefaults.filterChipBorder(
-                    borderColor = Divider,
-                    selectedBorderColor = Primary,
-                    enabled = true,
+    Column {
+        Spacer(modifier = Modifier.height(12.dp))
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            item {
+                FilterChip(
+                    selected = selectedCategory == null,
+                    onClick = { onCategorySelected(null) },
+                    label = { Text(stringResource(R.string.category_all), fontSize = 13.sp) },
+                    shape = RoundedCornerShape(10.dp),
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = Primary,
+                        selectedLabelColor = Color.White,
+                        containerColor = Color.White,
+                        labelColor = OnSurface,
+                    ),
+                    border = FilterChipDefaults.filterChipBorder(
+                        borderColor = Divider,
+                        selectedBorderColor = Primary,
+                        enabled = true,
+                        selected = selectedCategory == null,
+                    ),
+                )
+            }
+            items(ProductCategory.entries) { category ->
+                FilterChip(
                     selected = selectedCategory == category,
-                ),
-            )
+                    onClick = { onCategorySelected(category) },
+                    label = { Text(stringResource(category.titleRes), fontSize = 13.sp) },
+                    shape = RoundedCornerShape(10.dp),
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = Primary,
+                        selectedLabelColor = Color.White,
+                        containerColor = Color.White,
+                        labelColor = OnSurface,
+                    ),
+                    border = FilterChipDefaults.filterChipBorder(
+                        borderColor = Divider,
+                        selectedBorderColor = Primary,
+                        enabled = true,
+                        selected = selectedCategory == category,
+                    ),
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun InspirationRow() {
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        items(inspirationArticles) { article ->
-            Card(
-                modifier = Modifier
-                    .width(220.dp)
-                    .height(140.dp),
-                shape = RoundedCornerShape(10.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-            ) {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    Image(
-                        painter = painterResource(id = article.imageRes),
-                        contentDescription = article.title,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop,
-                    )
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.verticalGradient(
-                                    colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.55f)),
-                                    startY = 40f,
+private fun InspirationSection() {
+    Column {
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(
+            text = stringResource(R.string.home_inspiration),
+            style = MaterialTheme.typography.titleLarge,
+            color = OnSurface,
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            items(inspirationArticles) { article ->
+                Card(
+                    modifier = Modifier
+                        .width(260.dp)
+                        .height(150.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                ) {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        Image(
+                            painter = painterResource(id = article.imageRes),
+                            contentDescription = article.title,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(
+                                    Brush.verticalGradient(
+                                        colors = listOf(
+                                            Color.Transparent,
+                                            Color.Black.copy(alpha = 0.55f)
+                                        ),
+                                        startY = 60f,
+                                    )
                                 )
-                            )
-                    )
-                    Text(
-                        text = article.title,
-                        color = Color.White,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(12.dp),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                    )
+                        )
+                        Text(
+                            text = article.title,
+                            color = Color.White,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier
+                                .align(Alignment.BottomStart)
+                                .padding(14.dp),
+                        )
+                    }
                 }
             }
         }
@@ -393,24 +404,21 @@ private fun ProductCard(
                 contentDescription = product.title,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(150.dp)
+                    .aspectRatio(1f)
                     .clip(RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp)),
-                contentScale = ContentScale.Crop,
+                contentScale = ContentScale.Crop
             )
-
             Column(modifier = Modifier.padding(12.dp)) {
                 Text(
                     text = stringResource(product.category.titleRes).uppercase(),
                     fontSize = 10.sp,
-                    fontWeight = FontWeight.Medium,
                     color = Accent,
-                    letterSpacing = 1.sp,
+                    fontWeight = FontWeight.Medium,
+                    letterSpacing = 1.5.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-
                 Spacer(modifier = Modifier.height(4.dp))
-
                 Text(
                     text = product.title,
                     fontSize = 14.sp,
@@ -420,9 +428,7 @@ private fun ProductCard(
                     overflow = TextOverflow.Ellipsis,
                     lineHeight = 18.sp,
                 )
-
                 Spacer(modifier = Modifier.height(6.dp))
-
                 Text(
                     text = "£%.2f".format(product.price),
                     fontSize = 15.sp,
