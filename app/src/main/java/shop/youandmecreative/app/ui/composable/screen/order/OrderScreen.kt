@@ -2,6 +2,7 @@ package shop.youandmecreative.app.ui.composable.screen.order
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Receipt
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -59,58 +61,56 @@ private fun OrdersContent(
     ordersState: DataUiState<List<OrderEntity>>,
     modifier: Modifier = Modifier,
 ) {
-    YNMCRContentWrapper(
-        dataState = ordersState,
-        modifier = modifier,
-
-        dataPopulated = {
-            val orders = (ordersState as DataUiState.Populated<List<OrderEntity>>).data
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 16.dp),
-            ) {
-                items(orders, key = { it.orderNumber }) { order ->
-                    OrderCard(order = order)
+    Column(modifier = modifier.fillMaxSize()) {
+        YNMCRContentWrapper(
+            modifier = Modifier.fillMaxSize(),
+            dataState = ordersState,
+            dataPopulated = {
+                val orders = (ordersState as DataUiState.Populated<List<OrderEntity>>).data
+                LazyColumn(
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    items(orders, key = { it.orderNumber }) { order ->
+                        OrderCard(order = order)
+                    }
                 }
-            }
-        },
-
-        dataEmpty = {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Receipt,
-                    contentDescription = null,
-                    modifier = Modifier.size(64.dp),
-                    tint = Divider,
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = stringResource(R.string.orders_state_empty_primary_text),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = OnSurface,
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = stringResource(R.string.orders_state_empty_secondary_text),
-                    fontSize = 14.sp,
-                    color = MutedText,
-                )
-            }
-        },
-    )
+            },
+            dataEmpty = {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Receipt,
+                        contentDescription = null,
+                        modifier = Modifier.size(64.dp),
+                        tint = Divider,
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = stringResource(R.string.orders_state_empty_primary_text),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = OnSurface,
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(R.string.orders_state_empty_secondary_text),
+                        fontSize = 14.sp,
+                        color = MutedText,
+                    )
+                }
+            },
+        )
+    }
 }
 
 @Composable
 private fun OrderCard(order: OrderEntity) {
-    val formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm")
+    val dateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm")
+    val itemCount = order.description.split(",").size
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -126,35 +126,30 @@ private fun OrderCard(order: OrderEntity) {
             ) {
                 Text(
                     text = stringResource(R.string.order_number, order.orderNumber),
-                    fontSize = 16.sp,
+                    fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = OnSurface,
                 )
-
                 // Status chip
-                Card(
-                    shape = RoundedCornerShape(6.dp),
-                    colors = CardDefaults.cardColors(containerColor = Accent.copy(alpha = 0.15f)),
-                ) {
-                    Text(
-                        text = stringResource(R.string.order_status_reserved),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Accent,
-                        letterSpacing = 1.sp,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                    )
-                }
+                Text(
+                    text = stringResource(R.string.order_status_reserved).uppercase(),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Accent,
+                    letterSpacing = 1.sp,
+                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = order.timestamp.format(formatter),
+                text = order.timestamp.format(dateFormatter),
                 fontSize = 13.sp,
                 color = MutedText,
             )
 
+            Spacer(modifier = Modifier.height(8.dp))
+            HorizontalDivider(color = Divider)
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
@@ -165,20 +160,20 @@ private fun OrderCard(order: OrderEntity) {
                 maxLines = 3,
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
-                    text = stringResource(R.string.order_customer, order.customerFirstName, order.customerLastName),
+                    text = stringResource(R.string.order_items_count, itemCount),
                     fontSize = 13.sp,
                     color = MutedText,
                 )
                 Text(
                     text = "£%.2f".format(order.price),
-                    fontSize = 15.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Accent,
                 )

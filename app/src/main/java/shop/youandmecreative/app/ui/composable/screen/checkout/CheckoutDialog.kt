@@ -1,6 +1,6 @@
 package shop.youandmecreative.app.ui.composable.screen.checkout
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,10 +40,10 @@ fun CheckoutDialog(
 ) {
     Dialog(
         onDismissRequest = onConfirm,
-        properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false),
+        properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
     ) {
         Surface(
-            shape = RoundedCornerShape(10.dp),
+            shape = RoundedCornerShape(16.dp),
             color = Color.White,
             shadowElevation = 4.dp,
         ) {
@@ -52,7 +52,6 @@ fun CheckoutDialog(
                     .fillMaxWidth()
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
             ) {
                 Icon(
                     imageVector = Icons.Outlined.CheckCircle,
@@ -65,10 +64,9 @@ fun CheckoutDialog(
 
                 Text(
                     text = stringResource(R.string.checkout_dialog_title),
-                    fontSize = 20.sp,
+                    fontSize = 22.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = OnSurface,
-                    textAlign = TextAlign.Center,
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -81,7 +79,7 @@ fun CheckoutDialog(
                     fontWeight = FontWeight.Medium,
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
                     text = stringResource(R.string.checkout_dialog_processing_message),
@@ -94,11 +92,12 @@ fun CheckoutDialog(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = stringResource(R.string.checkout_dialog_store_address),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = OnSurface,
+                    text = "You & Me Creations\nHigh Street, London",
+                    fontSize = 13.sp,
+                    color = Accent,
                     textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Medium,
+                    lineHeight = 18.sp,
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -113,9 +112,9 @@ fun CheckoutDialog(
                 ) {
                     Text(
                         text = stringResource(R.string.checkout_dialog_ok),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
                         color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
                     )
                 }
             }

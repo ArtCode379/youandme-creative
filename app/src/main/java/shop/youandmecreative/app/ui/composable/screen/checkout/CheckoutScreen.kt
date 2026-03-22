@@ -10,7 +10,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -19,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -104,7 +104,60 @@ private fun CheckoutContent(
             .verticalScroll(rememberScrollState())
             .padding(20.dp)
     ) {
-        // Form card
+        Text(
+            text = "Contact Information",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = OnSurface,
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        CheckoutTextField(
+            input = customerFirstName,
+            onInputChange = onFirstNameChanged,
+            labelText = stringResource(R.string.checkout_text_field_first_name),
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        CheckoutTextField(
+            input = customerLastName,
+            onInputChange = onLastNameChanged,
+            labelText = stringResource(R.string.checkout_text_field_last_name),
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        CheckoutTextField(
+            input = customerEmail,
+            onInputChange = onEmailChanged,
+            labelText = stringResource(R.string.checkout_text_field_email),
+            modifier = Modifier.fillMaxWidth(),
+            isError = isEmailInvalid,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+        )
+
+        if (isEmailInvalid) {
+            Text(
+                text = "Please enter a valid email address",
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 4.dp, top = 4.dp),
+            )
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Reservation info card
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(10.dp),
@@ -113,95 +166,36 @@ private fun CheckoutContent(
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "CONTACT DETAILS",
-                    fontSize = 11.sp,
+                    text = "Order Reservation",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = OnSurface,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Your items will be reserved for pickup at our store within 24 hours. No payment is required at this time.",
+                    fontSize = 13.sp,
+                    color = MutedText,
+                    lineHeight = 20.sp,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "You & Me Creations, High Street, London",
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
                     color = Accent,
-                    letterSpacing = 1.5.sp,
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                CheckoutTextField(
-                    input = customerFirstName,
-                    onInputChange = onFirstNameChanged,
-                    labelText = stringResource(R.string.checkout_text_field_first_name),
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                CheckoutTextField(
-                    input = customerLastName,
-                    onInputChange = onLastNameChanged,
-                    labelText = stringResource(R.string.checkout_text_field_last_name),
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                CheckoutTextField(
-                    input = customerEmail,
-                    onInputChange = onEmailChanged,
-                    labelText = stringResource(R.string.checkout_text_field_email),
-                    modifier = Modifier.fillMaxWidth(),
-                    isError = isEmailInvalid,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Email,
-                        imeAction = ImeAction.Done,
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onDone = { focusManager.clearFocus() }
-                    ),
                 )
             }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Store info
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(10.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "PICKUP INFORMATION",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Accent,
-                    letterSpacing = 1.5.sp,
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = "Your items will be ready for pickup within 24 hours at:",
-                    fontSize = 14.sp,
-                    color = MutedText,
-                    lineHeight = 20.sp,
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = stringResource(R.string.checkout_dialog_store_address),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = OnSurface,
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Confirm Reservation button
         Button(
             onClick = onPlaceOrderButtonClick,
-            enabled = isButtonEnabled,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp),
+            enabled = isButtonEnabled,
             shape = RoundedCornerShape(10.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Primary,
@@ -210,11 +204,13 @@ private fun CheckoutContent(
         ) {
             Text(
                 text = stringResource(R.string.button_confirm_order_label),
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
                 color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
             )
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
