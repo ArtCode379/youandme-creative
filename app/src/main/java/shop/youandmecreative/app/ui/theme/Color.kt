@@ -22,18 +22,28 @@ val OnSurface = Color(0xFF2C3E50)
 // Utility
 val MutedText = Color(0xFF6C757D)
 val Divider = Color(0xFFE0E0E0)
-val ErrorColor = Color(0xFFE53935)
+val Error = Color(0xFFE53935)
+val ErrorColor = Error
 
 // Gradient
 val GradientStart = Color(0xFF667EEA)
 val GradientEnd = Color(0xFF764BA2)
 
 // Dark theme
-val DarkBackground = Color(0xFF121212)
-val DarkSurface = Color(0xFF1E1E1E)
-val DarkOnSurface = Color(0xFFE0E0E0)
-val DarkPrimary = Color(0xFF8B9AF0)
-val DarkAccent = Color(0xFFE5C864)
+val PrimaryDarkTheme = Color(0xFF8B9AF0)
+val AccentDarkTheme = Color(0xFFE5C864)
+val BackgroundDark = Color(0xFF121212)
+val SurfaceDark = Color(0xFF1E1E1E)
+val OnSurfaceDark = Color(0xFFE0E0E0)
+val MutedTextDark = Color(0xFF9E9E9E)
+val DividerDark = Color(0xFF424242)
+
+// Aliases
+val DarkPrimary = PrimaryDarkTheme
+val DarkAccent = AccentDarkTheme
+val DarkBackground = BackgroundDark
+val DarkSurface = SurfaceDark
+val DarkOnSurface = OnSurfaceDark
 
 // Legacy aliases
 val Purple80 = PrimaryLight

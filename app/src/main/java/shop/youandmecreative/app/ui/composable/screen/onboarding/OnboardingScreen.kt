@@ -78,8 +78,6 @@ fun OnboardingScreen(
     onNavigateToHomeScreen: () -> Unit,
 ) {
     val onboardingSetState by viewModel.onboardingSetState.collectAsState()
-    val scope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(pageCount = { onboardingPagesContent.size })
 
     LaunchedEffect(onboardingSetState) {
         if (onboardingSetState) {
@@ -87,31 +85,36 @@ fun OnboardingScreen(
         }
     }
 
+    val pagerState = rememberPagerState(pageCount = { onboardingPagesContent.size })
+    val coroutineScope = rememberCoroutineScope()
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(Color.White),
     ) {
-        // Skip button
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 12.dp),
-            horizontalArrangement = Arrangement.End
+                .padding(top = 16.dp, end = 16.dp),
+            contentAlignment = Alignment.CenterEnd,
         ) {
-            TextButton(onClick = { viewModel.setOnboardingCompleted() }) {
-                Text(
-                    text = stringResource(R.string.skip_button_title),
-                    color = MutedText,
-                    fontSize = 14.sp,
-                )
+            if (pagerState.currentPage < onboardingPagesContent.size - 1) {
+                TextButton(onClick = { viewModel.setOnboarded() }) {
+                    Text(
+                        text = stringResource(R.string.skip_button_title),
+                        color = MutedText,
+                        fontSize = 14.sp,
+                    )
+                }
             }
         }
 
-        // Pager
         HorizontalPager(
             state = pagerState,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
         ) { page ->
             val content = onboardingPagesContent[page]
             Column(
@@ -119,32 +122,29 @@ fun OnboardingScreen(
                     .fillMaxSize()
                     .padding(horizontal = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
             ) {
                 Image(
                     painter = painterResource(id = content.imageRes),
                     contentDescription = null,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(340.dp)
+                        .height(300.dp)
                         .clip(RoundedCornerShape(10.dp)),
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Crop,
                 )
-
                 Spacer(modifier = Modifier.height(32.dp))
-
                 Text(
-                    text = stringResource(id = content.titleRes),
+                    text = stringResource(content.titleRes),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = OnSurface,
                     textAlign = TextAlign.Center,
                     letterSpacing = 1.sp,
                 )
-
                 Spacer(modifier = Modifier.height(16.dp))
-
                 Text(
-                    text = stringResource(id = content.descriptionRes),
+                    text = stringResource(content.descriptionRes),
                     fontSize = 15.sp,
                     color = MutedText,
                     textAlign = TextAlign.Center,
@@ -153,7 +153,6 @@ fun OnboardingScreen(
             }
         }
 
-        // Dot indicators
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -161,49 +160,48 @@ fun OnboardingScreen(
             horizontalArrangement = Arrangement.Center,
         ) {
             repeat(onboardingPagesContent.size) { index ->
-                val color = if (pagerState.currentPage == index) Primary else Divider
                 Box(
                     modifier = Modifier
                         .padding(horizontal = 4.dp)
-                        .size(if (pagerState.currentPage == index) 10.dp else 8.dp)
+                        .size(if (index == pagerState.currentPage) 10.dp else 8.dp)
                         .clip(CircleShape)
-                        .background(color)
+                        .background(
+                            if (index == pagerState.currentPage) Primary else Divider
+                        )
                 )
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Button
         Button(
             onClick = {
                 if (pagerState.currentPage < onboardingPagesContent.size - 1) {
-                    scope.launch {
+                    coroutineScope.launch {
                         pagerState.animateScrollToPage(pagerState.currentPage + 1)
                     }
                 } else {
-                    viewModel.setOnboardingCompleted()
+                    viewModel.setOnboarded()
                 }
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(48.dp)
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = 24.dp)
+                .height(48.dp),
             shape = RoundedCornerShape(10.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Primary),
         ) {
             Text(
-                text = if (pagerState.currentPage < onboardingPagesContent.size - 1) {
+                text = if (pagerState.currentPage < onboardingPagesContent.size - 1)
                     stringResource(R.string.next_button_title)
-                } else {
-                    stringResource(R.string.start_button_title)
-                },
+                else
+                    stringResource(R.string.start_button_title),
                 color = Color.White,
                 fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.Medium,
             )
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(40.dp))
     }
 }
