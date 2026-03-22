@@ -10,6 +10,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -18,7 +19,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -39,7 +39,6 @@ import shop.youandmecreative.app.data.entity.OrderEntity
 import shop.youandmecreative.app.ui.state.DataUiState
 import shop.youandmecreative.app.ui.theme.Accent
 import shop.youandmecreative.app.ui.theme.MutedText
-import shop.youandmecreative.app.ui.theme.OnSurface
 import shop.youandmecreative.app.ui.theme.Primary
 import shop.youandmecreative.app.ui.viewmodel.CheckoutViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -102,15 +101,13 @@ private fun CheckoutContent(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(20.dp)
+            .padding(20.dp),
     ) {
         Text(
-            text = "Contact Information",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = OnSurface,
+            text = "CONTACT DETAILS",
+            style = MaterialTheme.typography.labelSmall,
+            color = Accent,
         )
-
         Spacer(modifier = Modifier.height(16.dp))
 
         CheckoutTextField(
@@ -120,7 +117,6 @@ private fun CheckoutContent(
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
         )
-
         Spacer(modifier = Modifier.height(12.dp))
 
         CheckoutTextField(
@@ -130,7 +126,6 @@ private fun CheckoutContent(
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
         )
-
         Spacer(modifier = Modifier.height(12.dp))
 
         CheckoutTextField(
@@ -141,11 +136,10 @@ private fun CheckoutContent(
             isError = isEmailInvalid,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email,
-                imeAction = ImeAction.Done
+                imeAction = ImeAction.Done,
             ),
             keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
         )
-
         if (isEmailInvalid) {
             Text(
                 text = "Please enter a valid email address",
@@ -157,7 +151,6 @@ private fun CheckoutContent(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Reservation info card
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(10.dp),
@@ -166,51 +159,53 @@ private fun CheckoutContent(
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "Order Reservation",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = OnSurface,
+                    text = "PICKUP INFORMATION",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Accent,
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "Your items will be reserved for pickup at our store within 24 hours. No payment is required at this time.",
-                    fontSize = 13.sp,
+                    text = "Your order will be reserved for in-store pickup.",
+                    fontSize = 14.sp,
                     color = MutedText,
-                    lineHeight = 20.sp,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "You & Me Creations, High Street, London",
-                    fontSize = 13.sp,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Accent,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Please collect within 24 hours of reservation.",
+                    fontSize = 13.sp,
+                    color = MutedText,
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
         Button(
             onClick = onPlaceOrderButtonClick,
+            enabled = isButtonEnabled,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp),
-            enabled = isButtonEnabled,
             shape = RoundedCornerShape(10.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Primary,
-                disabledContainerColor = Primary.copy(alpha = 0.4f),
+                disabledContainerColor = Primary.copy(alpha = 0.5f),
             ),
         ) {
             Text(
-                text = stringResource(R.string.button_confirm_order_label),
+                text = "Confirm Reservation",
                 color = Color.White,
                 fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.Medium,
             )
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
